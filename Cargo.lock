@@ -311,6 +311,7 @@ checksum = "32619942b8be646939eaf3db0602b39f5229b74575b67efc897811ded1db4e57"
 name = "gym-bot-rust"
 version = "0.1.0"
 dependencies = [
+ "chrono",
  "dashmap",
  "frankenstein",
  "log 0.4.14",

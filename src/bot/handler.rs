@@ -57,6 +57,8 @@ impl MessageHandler {
                         let ans = match user.state() {
                             State::SelectExercise => {
                                 user.set_state(State::SelectWeight);
+                                let exercise = Exercise::new(text.clone());
+                                user.training().add_exercise(exercise);
                                 store.insert(user.id(), user);
                                 "Select bench_press"
                             }
@@ -68,6 +70,8 @@ impl MessageHandler {
                         let ans = match user.state() {
                             State::SelectExercise => {
                                 user.set_state(State::SelectWeight);
+                                let exercise = Exercise::new(text.clone());
+                                user.training().add_exercise(exercise);
                                 store.insert(user.id(), user);
                                 "Select squat"
                             }
@@ -79,6 +83,8 @@ impl MessageHandler {
                         let ans = match user.state() {
                             State::SelectExercise => {
                                 user.set_state(State::SelectWeight);
+                                let exercise = Exercise::new(text.clone());
+                                user.training().add_exercise(exercise);
                                 store.insert(user.id(), user);
                                 "Select dead_lift"
                             }
@@ -100,15 +106,21 @@ impl MessageHandler {
                         };
                         ans
                     }
-                    _ => {
-                        user_info = format!(
-                            "Id: {}, name: {}, state: {:?}",
-                            user.id(),
-                            user.name(),
-                            user.state()
-                        );
+                    "/show" => {
+                        user_info = format!("User: {:?}", user);
                         user_info.as_str()
                     }
+                    "/stop" => {
+                        let training_time = user.training().get_start_time().elapsed();
+                        user_info = format!(
+                            "Finish trainig\nTraining duration: {:?}\nTraining info: {:?}",
+                            training_time.clone(),
+                            user.training().clone()
+                        );
+                        store.remove(&user.id());
+                        user_info.as_str()
+                    }
+                    _ => "Unknown command, try /help",
                 };
                 answer.to_string()
             }
@@ -116,13 +128,27 @@ impl MessageHandler {
                 let ans = match user.state() {
                     State::SelectWeight => {
                         user.set_state(State::SelectReps);
-                        store.insert(user.id(), user);
-                        format!("Weight selected: {}, now select reps", num)
+                        match user.training().get_exercises().last_mut() {
+                            Some(ex) => {
+                                log::info!("Add weight: {}", num);
+                                ex.set_weight(num);
+                                store.insert(user.id(), user);
+                                format!("Weight selected: {}, now select reps", num)
+                            }
+                            None => "Exercise not found".to_string(),
+                        }
                     }
                     State::SelectReps => {
                         user.set_state(State::SelectWeight);
-                        store.insert(user.id(), user);
-                        format!("Reps selected: {}, now select weight for next turn, or type /exercise for select other", num)
+                        match user.training().get_exercises().last_mut() {
+                            Some(ex) => {
+                                log::info!("Add reps: {}", num);
+                                ex.set_reps(num);
+                                store.insert(user.id(), user);
+                                format!("Reps selected: {}, now select weight for next turn, or select /exercise for select another one", num)
+                            }
+                            None => "Exercise not found".to_string(),
+                        }
                     }
                     _ => "can not process request".to_string(),
                 };
