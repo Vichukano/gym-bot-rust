@@ -90,6 +90,14 @@ impl Exercise {
     pub fn set_reps(&mut self, reps: u32) {
         self.reps.push(reps);
     }
+    
+    pub fn weight(&mut self) -> &mut Vec<u32> {
+        &mut self.weight
+    }
+
+    pub fn reps(&mut self) -> &mut Vec<u32> {
+        &mut self.reps
+    }
 }
 
 #[derive(Debug, Clone)]

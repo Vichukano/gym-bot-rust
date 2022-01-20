@@ -65,47 +65,10 @@ impl MessageHandler {
                 /bench_press\n
                 /squat\n
                 /dead_lift\n
-                ".to_string()
+                "
+                .to_string()
             }
-            "/bench_press" => {
-                let ans = match user.state() {
-                    State::SelectExercise => {
-                        user.set_state(State::SelectWeight);
-                        let exercise = Exercise::new(text.clone());
-                        user.training().add_exercise(exercise);
-                        store.insert(user.id(), user);
-                        "Select bench_press".to_string()
-                    }
-                    _ => "Can not select exersice now".to_string(),
-                };
-                ans
-            }
-            "/squat" => {
-                let ans = match user.state() {
-                    State::SelectExercise => {
-                        user.set_state(State::SelectWeight);
-                        let exercise = Exercise::new(text.clone());
-                        user.training().add_exercise(exercise);
-                        store.insert(user.id(), user);
-                        "Select squat".to_string()
-                    }
-                    _ => "Can not select exersice now".to_string(),
-                };
-                ans
-            }
-            "/dead_lift" => {
-                let ans = match user.state() {
-                    State::SelectExercise => {
-                        user.set_state(State::SelectWeight);
-                        let exercise = Exercise::new(text.clone());
-                        user.training().add_exercise(exercise);
-                        store.insert(user.id(), user);
-                        "Select dead_lift".to_string()
-                    }
-                    _ => "Can not select exersice now".to_string(),
-                };
-                ans
-            }
+            "/bench_press" | "/squat" | "/dead_lift" => handle_exersice(&mut user, text, store),
             "/exercise" => {
                 let ans = match user.state() {
                     State::SelectWeight => {
@@ -114,9 +77,40 @@ impl MessageHandler {
                         "Start training, select exercise from:\n
                         /bench_press\n
                         /squat\n
-                        /dead_lift".to_string()
+                        /dead_lift"
+                            .to_string()
                     }
                     _ => "can not select exersice now".to_string(),
+                };
+                ans
+            }
+            "/cancel" => {
+                let ans = match user.state() {
+                    State::SelectWeight => {
+                        log::info!("Start to cancel exercise or reps");
+                        let reps = user.training().get_exercises().last_mut().unwrap().reps();
+                        if reps.is_empty() {
+                            let trainings = user.training().get_exercises();
+                            let removed =                            trainings.pop();
+                            format!("Remove last exercise: {:?}", removed)
+                        } else {
+                            let removed = reps.pop();
+                            format!("Remove last reps: {:?}", removed)
+                        }
+                    }
+                    State::SelectReps => {
+                        log::info!("Start to cancel exercise or weight");
+                        let weight = user.training().get_exercises().last_mut().unwrap().weight();
+                        if weight.is_empty() {
+                            let trainings = user.training().get_exercises();
+                            let removed = trainings.pop();
+                            format!("Remove last exercise: {:?}", removed)
+                        } else {
+                            let removed = weight.pop();
+                            format!("Remove last weight: {:?}", removed)
+                        }
+                    }
+                    _ => "nothing to cancel".to_string()
                 };
                 ans
             }
@@ -168,6 +162,20 @@ impl MessageHandler {
         };
         ans
     }
+}
+
+fn handle_exersice(user: &mut User, text: &String, store: &DashMap<u64, User>) -> String {
+    let ans = match user.state() {
+        State::SelectExercise => {
+            user.set_state(State::SelectWeight);
+            let exercise = Exercise::new(text.clone());
+            user.training().add_exercise(exercise);
+            store.insert(user.id(), user.to_owned());
+            format!("Select {}, now select weright", text)
+        }
+        _ => "Can not select exersice now".to_string(),
+    };
+    ans
 }
 
 fn text_to_commant(text: &String) -> MessageType {
