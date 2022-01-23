@@ -90,7 +90,7 @@ impl Exercise {
     pub fn set_reps(&mut self, reps: u32) {
         self.reps.push(reps);
     }
-    
+
     pub fn weight(&mut self) -> &mut Vec<u32> {
         &mut self.weight
     }
@@ -113,4 +113,20 @@ pub enum MessageType {
     BotCommand(String),
     Number(u32),
     Other(String),
+}
+
+pub enum ExerciseName {
+    BenchPress,
+    Squat,
+    DeadLift,
+}
+
+impl ExerciseName {
+    pub fn value(&self) -> &str {
+        match self {
+            ExerciseName::BenchPress => "/bench_press",
+            ExerciseName::Squat => "/squat",
+            ExerciseName::DeadLift => "/dead_lift",
+        }
+    }
 }

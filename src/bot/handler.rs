@@ -90,24 +90,38 @@ impl MessageHandler {
                         log::info!("Start to cancel exercise or reps");
                         let reps = user.training().get_exercises().last_mut().unwrap().reps();
                         if reps.is_empty() {
-                            let trainings = user.training().get_exercises();
-                            let removed =                            trainings.pop();
-                            format!("Remove last exercise: {:?}", removed)
+                            let exercises = user.training().get_exercises();
+                            let removed =                            exercises.pop();
+                            log::info!("Deubug trainings: {:?}", exercises);
+                            user.set_state(State::SelectExercise);
+                            store.insert(user.id(), user);
+                            format!("Remove last exercise: {:?}, select exercise again", removed)
                         } else {
                             let removed = reps.pop();
-                            format!("Remove last reps: {:?}", removed)
+                            let exercises = user.training().get_exercises();
+                            log::info!("Deubug trainings: {:?}", exercises);
+                            user.set_state(State::SelectReps);
+                            store.insert(user.id(), user);
+                            format!("Remove last reps: {:?}, select reps again", removed)
                         }
                     }
                     State::SelectReps => {
                         log::info!("Start to cancel exercise or weight");
                         let weight = user.training().get_exercises().last_mut().unwrap().weight();
                         if weight.is_empty() {
-                            let trainings = user.training().get_exercises();
-                            let removed = trainings.pop();
-                            format!("Remove last exercise: {:?}", removed)
+                            let exercises = user.training().get_exercises();
+                            let removed = exercises.pop();
+                            log::info!("Deubug trainings: {:?}", exercises);
+                            user.set_state(State::SelectExercise);
+                            store.insert(user.id(), user);
+                            format!("Remove last exercise: {:?}, select exercise again", removed)
                         } else {
                             let removed = weight.pop();
-                            format!("Remove last weight: {:?}", removed)
+                            let exercises = user.training().get_exercises();
+                            log::info!("Deubug trainings: {:?}", exercises);
+                            user.set_state(State::SelectWeight);
+                            store.insert(user.id(), user);
+                            format!("Remove last weight: {:?}, select weight again", removed)
                         }
                     }
                     _ => "nothing to cancel".to_string()
